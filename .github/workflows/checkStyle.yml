@@ -2,9 +2,7 @@ name: Checkstyle
 
 on:
   push:
-    branches:
-      - master
-  workflow_dispatch:
+    branches: [ "master" ]
   pull_request:
     branches: [ "**" ]
 
@@ -26,3 +24,9 @@ jobs:
       - name: Run Checkstyle
         run: |
           mvn checkstyle:check || echo "Checkstyle warnings found, but not failing the pipeline."
+        continue-on-error: true
+
+      - name: Mark as warning if Checkstyle fails
+        if: failure()
+        run: |
+          echo "::warning file=checkstyle::Checkstyle found issues, review logs."
