@@ -1,4 +1,4 @@
-name: Deploy Maven Site to GitHub Pages
+name: Deploy Maven Site with SonarQube to GitHub Pages
 
 on:
   push:
@@ -28,8 +28,31 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Run SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          mvn clean verify sonar:sonar \
+            -Dsonar.projectKey=ton-projet-key \
+            -Dsonar.organization=ton-organisation \
+            -Dsonar.host.url=$SONAR_HOST_URL \
+            -Dsonar.login=$SONAR_TOKEN
+
       - name: Build Maven site
-        run: mvn clean site
+        run: mvn site
+
+      - name: Copy SonarQube report to site
+        run: |
+          mkdir -p target/site/sonar
+          cp -r target/site/* target/site/sonar/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
