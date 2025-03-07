@@ -52,8 +52,8 @@ jobs:
       - name: Copy SonarQube report to site
         run: |
           mkdir -p target/site/sonar
-          cp -r target/site/* target/site/sonar/
-
+          cp -r target/sonar-report/* target/site/sonar/
+          
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
