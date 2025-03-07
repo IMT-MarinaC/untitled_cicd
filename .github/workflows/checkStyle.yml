@@ -22,11 +22,13 @@ jobs:
           cache: maven
 
       - name: Run Checkstyle
+        id: checkstyle
         run: |
           mvn checkstyle:check || echo "Checkstyle warnings found, but not failing the pipeline."
         continue-on-error: true
 
-      - name: Mark as warning if Checkstyle fails
-        if: failure()
+      - name: Mark job as warning if Checkstyle fails
+        if: steps.checkstyle.outcome == 'failure'
         run: |
           echo "::warning file=checkstyle::Checkstyle found issues, review logs."
+          exit 0
